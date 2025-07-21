@@ -14,6 +14,10 @@ const PUBLIC_API = [
   '/api/approval',
   '/api/asset',
   '/api/category',
+  '/api/procurement',
+  '/api/asset-assignment',
+  '/api/vendor',
+  '/api/vendor-product',
 ]
 
 export function middleware(req: NextRequest) {

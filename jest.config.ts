@@ -1,16 +1,14 @@
-import nextJest from 'next/jest.js'
+import type { Config } from 'jest';
 
-const createJestConfig = nextJest({
-  dir: './', // path ke root project Next.js kamu
-})
-
-const customJestConfig = {
+const config: Config = {
   testEnvironment: 'node',
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }]
   },
-  moduleDirectories: ['node_modules', '<rootDir>/'],
-  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[tj]s?(x)'],
-}
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1'
+  },
+  testMatch: ['**/tests/**/*.test.ts']
+};
 
-export default createJestConfig(customJestConfig)
+export default config;
