@@ -15,3 +15,14 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error }, { status: 500 });
     }
 }
+
+export async function GET() {
+    try {
+        const categories = await prisma.category.findMany({
+            orderBy: { createdAt: "desc" },
+        });
+        return NextResponse.json(categories);
+    } catch {
+        return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    }
+}

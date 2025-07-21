@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcrypt";
 import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 export async function POST(request: Request) {
     const body = await request.json();
@@ -19,15 +20,23 @@ export async function POST(request: Request) {
         // Here you would typically hash the password and save the user to the database.
         // For demonstration purposes, we'll just return a success message.
     }
-    console.log(Object.keys(prisma));
+
     const isValid = await compare(password, user.password);
     if (!isValid) {
         return NextResponse.json({ error: 'Invalid password.' }, { status: 401 });
     }
-    return NextResponse.json({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-    })
+
+    const token = jwt.sign(
+        {
+            id: user.id,
+            email: user.email,
+            role: user.role
+        },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7d" }
+    );
+
+    return NextResponse.json({ token });
+
+
 }
