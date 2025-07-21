@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { createServer } from 'http';
-import app from '@/app'; // Pastikan ini benar mengarah ke App Router Next.js atau handler API
+import app from '../src/app/api'
+
 
 describe('POST /api/auth/login', () => {
   it('should return token if login is successful', async () => {
