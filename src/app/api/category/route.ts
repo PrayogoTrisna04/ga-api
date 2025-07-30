@@ -39,7 +39,8 @@ export async function POST(request: Request) {
       data: { name, prefix }
     });
     return jsonCreated(categories)
-  } catch {
-    return jsonErrorResponse("Failed to fetch categories");
+  } catch(err) {
+   console.error("Failed to create category", err);
+    return jsonErrorResponse("Failed to create category");
   }
 }
