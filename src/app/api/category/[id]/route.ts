@@ -1,6 +1,7 @@
 import { getToken } from "@/lib/auth";
 import { authorize } from "@/lib/authorize";
 import { prisma } from "@/lib/prisma";
+import { jsonActionFailed, jsonDetail, jsonErrorResponse, jsonUpdated } from "@/lib/response";
 import { NextResponse } from "next/server";
 
 // update category
@@ -8,7 +9,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const { id } = params;
     const { name, prefix } = await req.json();
 
-    if (!name || !prefix) return NextResponse.json({ error: 'Name and prefix are required' }, { status: 400 });
+    if (!name || !prefix) return jsonActionFailed('Name and prefix are required');
 
     try {
         // const token = getToken();
@@ -17,16 +18,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             where: { id },
             data: { name, prefix }
         });
-        return NextResponse.json(updated);
+        return jsonUpdated(updated);
     } catch (error) {
         if (error instanceof Error) {
             if (error.message === 'FORBIDDEN') {
-                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+                return jsonActionFailed('forbidden', 403)
             }
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return jsonActionFailed(error.message, 500);
         }
 
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return jsonActionFailed('Internal Server Error', 500);
     }
 }
 
@@ -53,11 +54,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
         });
 
         if (!category) {
-            return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+            return jsonErrorResponse('Category not found');
         }
 
-        return NextResponse.json(category);
-    } catch (error) {
-        return NextResponse.json({ error: ['Failed to fetch category', error] }, { status: 500 });
+        return jsonDetail(category);
+    } catch {
+        return jsonErrorResponse('Failed to fetch category');
     }
 }

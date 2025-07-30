@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { jsonCreated, jsonErrorResponse, jsonResponse, jsonValidationError } from "@/lib/response";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -18,31 +18,28 @@ export async function POST(request: Request) {
       prisma.category.count(),
     ]);
 
-    return NextResponse.json(
-      {
-        data: category ? category : [],
-        success: true,
-        code: 200,
-        meta: {
-          page,
-          size,
-          totalPages: Math.ceil(total / size),
-        },
-      }
-    );
+    return jsonResponse({
+      data: category ? category : [],
+      page,
+      size,
+      total,
+    })
   } catch {
-    console.error("Failed to fetch asset");
-    return NextResponse.json({ error: "Failed to fetch asset" }, { status: 500 });
+    return jsonErrorResponse("Failed to fetch asset");
   }
 }
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { createdAt: "desc" },
+    const { name, prefix } = await request.json();
+    if (!name || !prefix) {
+      return jsonValidationError('Name and prefix are required');
+    }
+    const categories = await prisma.category.create({
+      data: { name, prefix }
     });
-    return NextResponse.json(categories);
+    return jsonCreated(categories)
   } catch {
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    return jsonErrorResponse("Failed to fetch categories");
   }
 }

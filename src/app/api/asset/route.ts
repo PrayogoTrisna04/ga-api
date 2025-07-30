@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { jsonCreated, jsonErrorResponse, jsonResponse } from "@/lib/response";
+import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
 	try {
@@ -18,21 +19,15 @@ export async function GET(req: NextRequest) {
 			prisma.asset.count(),
 		]);
 
-		return NextResponse.json(
-			{
-				data: assets ? assets : [],
-				success: true,
-				code: 200,
-				meta: {
-					page,
-					size,
-					totalPages: Math.ceil(total / size),
-				},
-			}
-		);
+		return jsonResponse({
+			data: assets ? assets : [],
+			page,
+			size,
+			total,
+		});
 	} catch {
 		console.error("Failed to fetch asset");
-		return NextResponse.json({ error: "Failed to fetch asset" }, { status: 500 });
+		return jsonErrorResponse("Failed to fetch asset");
 	}
 }
 
@@ -43,19 +38,23 @@ function generateCode(prefix: string) {
 }
 
 export async function POST(request: Request) {
-	const { name, categoryId } = await request.json();
-	if (!name || !categoryId) {
-		return new Response(JSON.stringify({ error: 'Name and categoryId are required' }), { status: 400 });
-	}
+	try {
+		const { name, categoryId, quantity } = await request.json();
+		if (!name || !categoryId) {
+			return new Response(JSON.stringify({ error: 'Name and categoryId are required' }), { status: 400 });
+		}
 
-	const category = await prisma.category.findUnique({ where: { id: categoryId } });
-	if (!category) {
-		return NextResponse.json({ error: 'Invalid Category' }, { status: 404 });
-	}
+		const category = await prisma.category.findUnique({ where: { id: categoryId } });
+		if (!category) {
+			return jsonErrorResponse('Invalid Category', 400);
+		}
 
-	const code = generateCode(category.prefix);
-	const asset = await prisma.asset.create({
-		data: { name, code, categoryId }
-	});
-	return NextResponse.json(asset, { status: 201 });
+		const code = generateCode(category.prefix);
+		const asset = await prisma.asset.create({
+			data: { name, code, categoryId, quantity }
+		});
+		return jsonCreated(asset);
+	} catch {
+		return jsonErrorResponse('failed to insert asset');
+	}
 }
