@@ -45,5 +45,5 @@ next-env.d.ts
 # Prisma artifacts & local DB
 /prisma/dev.db
 *.sqlite
-/prisma/migrations/
+# /prisma/migrations/
 .prisma/
