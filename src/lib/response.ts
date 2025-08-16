@@ -122,3 +122,15 @@ export function jsonNotFound(message = 'Data not found') {
     )
 }
 
+export function jsonDeleted(message = 'Deleted') {
+    return NextResponse.json(
+        {
+            data: null,
+            success: true,
+            code: 200,
+            message,
+        },
+        { status: 200 }
+    )
+}
+

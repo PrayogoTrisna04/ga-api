@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { jsonDetail, jsonErrorResponse, jsonNotFound, jsonUpdated } from "@/lib/response";
-import { NextRequest, NextResponse } from "next/server";
+import { jsonDeleted, jsonDetail, jsonErrorResponse, jsonNotFound, jsonUpdated } from "@/lib/response";
+import { NextRequest } from "next/server";
 // Get by Id
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
@@ -36,5 +36,5 @@ export async function PUT(
 // Delete Asset
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   await prisma.asset.delete({ where: { id: params.id } });
-  return NextResponse.json({ message: "Deleted" });
+  return jsonDeleted();
 }

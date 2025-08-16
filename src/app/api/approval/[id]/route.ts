@@ -1,6 +1,7 @@
 // app/api/approval/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonDeleted } from '@/lib/response'
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
     try {
@@ -26,6 +27,6 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
         await prisma.approval.delete({ where: { id: parseInt(params.id) } })
         return NextResponse.json({ message: 'Deleted' })
     } catch {
-        return NextResponse.json({ error: 'Failed to delete approval' }, { status: 500 })
+        return jsonDeleted();
     }
 }

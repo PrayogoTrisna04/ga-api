@@ -13,6 +13,15 @@ export async function GET(req: NextRequest) {
 		const [assets, total] = await Promise.all([
 			prisma.asset.findMany({
 				skip,
+				select: {
+					id: true,
+					name: true,
+					code: true,
+					quantity: true,
+					isMaintenance: true,
+					createdAt: true,
+					category: true
+				},
 				take: size,
 				orderBy: { createdAt: 'desc' },
 			}),

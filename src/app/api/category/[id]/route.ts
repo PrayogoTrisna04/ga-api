@@ -1,8 +1,7 @@
 // import { getToken } from "@/lib/auth";
 // import { authorize } from "@/lib/authorize";
 import { prisma } from "@/lib/prisma";
-import { jsonActionFailed, jsonDetail, jsonErrorResponse, jsonUpdated } from "@/lib/response";
-import { NextResponse } from "next/server";
+import { jsonActionFailed, jsonDeleted, jsonDetail, jsonErrorResponse, jsonUpdated } from "@/lib/response";
 
 // update category
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -38,9 +37,9 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
         // const token = getToken();
         // authorize(token, ['ADMIN', 'GA']); // hanya ADMIN atau GA
         await prisma.category.delete({ where: { id } });
-        return NextResponse.json({ message: 'Category deleted successfully' });
-    } catch (error) {
-        return NextResponse.json({ error: ['Failed to delete category', error] }, { status: 500 });
+        return jsonDeleted();
+    } catch {
+        return jsonErrorResponse('failed to delete category!');
     }
 }
 
