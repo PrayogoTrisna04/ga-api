@@ -3,6 +3,8 @@ CREATE TABLE "Category" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "prefix" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
+    "is_device" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -14,6 +16,7 @@ CREATE TABLE "Asset" (
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "isMaintenance" BOOLEAN NOT NULL DEFAULT false,
     "categoryId" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Asset_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );

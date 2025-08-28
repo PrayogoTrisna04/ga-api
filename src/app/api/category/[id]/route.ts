@@ -6,7 +6,7 @@ import { jsonActionFailed, jsonDeleted, jsonDetail, jsonErrorResponse, jsonUpdat
 // update category
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
     const { id } = params;
-    const { name, prefix } = await req.json();
+    const { name, prefix,is_device } = await req.json();
 
     if (!name || !prefix) return jsonActionFailed('Name and prefix are required');
 
@@ -15,7 +15,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         // authorize(token, ['ADMIN', 'GA']); // hanya ADMIN atau GA
         const updated = await prisma.category.update({
             where: { id },
-            data: { name, prefix }
+            data: { name, prefix,is_device }
         });
         return jsonUpdated(updated);
     } catch (error) {
@@ -36,7 +36,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     try {
         // const token = getToken();
         // authorize(token, ['ADMIN', 'GA']); // hanya ADMIN atau GA
-        await prisma.category.delete({ where: { id } });
+        await prisma.category.update({ where: { id }, data: { is_deleted: true } });
         return jsonDeleted();
     } catch {
         return jsonErrorResponse('failed to delete category!');

@@ -35,6 +35,6 @@ export async function PUT(
 
 // Delete Asset
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await prisma.asset.delete({ where: { id: params.id } });
+  await prisma.asset.update({ where: { id: params.id }, data: { is_deleted: true } });
   return jsonDeleted();
 }

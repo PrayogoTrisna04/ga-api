@@ -17,6 +17,8 @@ model Category {
   id        String   @id @default(uuid())
   name      String   @unique
   prefix    String
+  is_deleted Boolean @default(false)
+  is_device Boolean @default(false)
   createdAt DateTime @default(now())
 
   assets    Asset[]
@@ -26,9 +28,9 @@ model Asset {
   id            String   @id @default(uuid())
   name          String
   code          String   @unique
-  quantity      Int      @default(1)
   isMaintenance Boolean  @default(false)
   categoryId    String
+  is_deleted Boolean @default(false)
   createdAt     DateTime @default(now())
 
   approvals   Approval[]
@@ -54,8 +56,11 @@ enum Role {
 }
 
 enum ApprovalStatus {
+  draft
   waiting_approval
-  approved
+  ready_onprogress
+  onprogress
+  done
   rejected
 }
 
