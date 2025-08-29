@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       prisma.category.findMany({
         skip,
         take: size,
-        where: whereClause,
+        where: { ...whereClause, is_deleted: false },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.category.count({
@@ -45,12 +45,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { name, prefix } = await request.json();
-    if (!name || !prefix) {
-      return jsonValidationError('Name and prefix are required');
+    const { name, prefix, is_device } = await request.json();
+    if (!name || !prefix || is_device === undefined) {
+      return jsonValidationError('Name, prefix and is_device are required');
     }
     const categories = await prisma.category.create({
-      data: { name, prefix }
+      data: { name, prefix, is_device }
     });
     return jsonCreated(categories)
   } catch (err) {
