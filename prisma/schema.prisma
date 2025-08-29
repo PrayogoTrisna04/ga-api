@@ -15,12 +15,11 @@ datasource db {
 
 model Category {
   id        String   @id @default(uuid())
-  name      String   @unique
+  name      String
   prefix    String
   is_deleted Boolean @default(false)
   is_device Boolean @default(false)
   createdAt DateTime @default(now())
-
   assets    Asset[]
 }
 
