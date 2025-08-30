@@ -29,6 +29,10 @@ export async function GET(req: NextRequest) {
 			_count: { id: true },
 		});
 
+		const categories = await prisma.category.findMany({
+			where: { id: { in: groupedAssets.map(a => a.categoryId) } },
+		})
+
 		// enrich data: ambil detail category + status isMaintenance + createdAt
 		const assets = await Promise.all(
 			groupedAssets.map(async (g) => {
@@ -42,13 +46,16 @@ export async function GET(req: NextRequest) {
 					},
 				});
 
+				const category = categories.find(c => c.id === asset?.category.id);
+
 				return {
 					id: asset?.id,
 					name: g.name,
 					quantity: g._count.id,
-					isMaintenance: asset?.isMaintenance,
-					createdAt: asset?.createdAt,
-					category: asset?.category,
+					category: {
+						id: category?.id,
+						name: category?.name
+					}
 				};
 			})
 		);
@@ -73,7 +80,7 @@ function generateCode(prefix: string) {
 
 export async function POST(request: Request) {
 	try {
-		const { name, categoryId, quantity } = await request.json();
+		const { name, categoryId } = await request.json();
 		if (!name || !categoryId) {
 			return new Response(JSON.stringify({ error: 'Name and categoryId are required' }), { status: 400 });
 		}
@@ -85,7 +92,7 @@ export async function POST(request: Request) {
 
 		const code = generateCode(category.prefix);
 		const asset = await prisma.asset.create({
-			data: { name, code, categoryId, quantity }
+			data: { name, code, categoryId }
 		});
 		return jsonCreated(asset);
 	} catch {

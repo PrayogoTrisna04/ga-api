@@ -29,13 +29,12 @@ model Asset {
   code          String   @unique
   isMaintenance Boolean  @default(false)
   categoryId    String
-  is_deleted Boolean @default(false)
+  is_deleted    Boolean @default(false)
   serial_number String?
   createdAt     DateTime @default(now())
-
-  approvals   Approval[]
-  assignments AssetAssignment[]
-  category    Category @relation(fields: [categoryId], references: [id])
+  approvals     Approval[]
+  assignments   AssetAssignment[]
+  category      Category @relation(fields: [categoryId], references: [id])
 }
 
 model User {
