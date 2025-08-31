@@ -4,7 +4,7 @@ import { jsonResponse, jsonErrorResponse } from "@/lib/response"
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { name: string } }
+  context: { params: Promise<{ name: string }> } 
 ) {
   try {
     const { searchParams } = new URL(req.url);
@@ -12,10 +12,11 @@ export async function GET(
     const size = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * size;
 
-    const name = decodeURIComponent(params.name);
+    const { name } = await context.params;
+    const decodedName = decodeURIComponent(name);
 
     const total = await prisma.asset.count({
-      where: { name, is_deleted: false },
+      where: { name: decodedName, is_deleted: false },
     });
 
     const assets = await prisma.asset.findMany({
