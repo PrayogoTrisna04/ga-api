@@ -7,13 +7,25 @@ export async function GET(req: NextRequest) {
 		const { searchParams } = new URL(req.url);
 		const page = parseInt(searchParams.get('page') || '1', 10);
 		const size = parseInt(searchParams.get('limit') || '10', 10);
+		const search = searchParams.get('keyword')?.trim() || '';
 
 		const skip = (page - 1) * size;
+
+		const whereClause = {
+			is_deleted: false,
+			...(search
+				? {
+					OR: [
+					  { name: { contains: search } },
+					],
+				}
+				: {}),
+		};
 
 		// ambil semua group dulu buat tau total
 		const groupedAll = await prisma.asset.groupBy({
 			by: ['name', 'categoryId'],
-			where: { is_deleted: false },
+			where: whereClause,
 			_count: { id: true },
 		});
 
@@ -22,7 +34,7 @@ export async function GET(req: NextRequest) {
 		// ambil data paginated
 		const groupedAssets = await prisma.asset.groupBy({
 			by: ['name', 'categoryId'],
-			where: { is_deleted: false },
+			where: whereClause,
 			orderBy: { name: 'asc' },
 			skip,
 			take: size,

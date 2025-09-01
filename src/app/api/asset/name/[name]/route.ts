@@ -10,17 +10,30 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const size = parseInt(searchParams.get("limit") || "10", 10);
+		const search = searchParams.get('keyword')?.trim() || '';
     const skip = (page - 1) * size;
 
     const { name } = await context.params;
     const decodedName = decodeURIComponent(name);
 
+    const whereClause = {
+      is_deleted: false,
+      ...(search
+        ? {
+          OR: [
+            { code: { contains: search } },
+            { serial_number: { contains: search } },
+          ],
+        }
+        : {})
+      };
+
     const total = await prisma.asset.count({
-      where: { name: decodedName, is_deleted: false },
+      where: { name: decodedName, ...whereClause },
     });
 
     const assets = await prisma.asset.findMany({
-      where: { name, is_deleted: false },
+      where: { name: decodedName, ...whereClause },
       include: { category: true },
       orderBy: { createdAt: "desc" },
       skip,
