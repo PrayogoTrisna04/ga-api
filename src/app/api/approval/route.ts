@@ -1,24 +1,29 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { ApprovalStatus, Prisma } from '@prisma/client'
-import { jsonActionFailed, jsonCreated, jsonErrorResponse, jsonResponse } from '@/lib/response';
+import { jsonCreated, jsonErrorResponse, jsonResponse } from '@/lib/response';
+import { safeJsonParse } from '@/lib/utils';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { submissionId, submissionType, requestedBy } = body;
 
-  if (!submissionId || !submissionType || !requestedBy) {
-    return jsonActionFailed("All fields are required.");
+  const { submissionType, status, notes, approvedBy, assetsRequest, createdBy, requestedBy } = body;
+
+  const data = {
+    submissionType,
+    status,
+    notes,
+    approvedBy: JSON.stringify(approvedBy),
+    assetsRequest: JSON.stringify(assetsRequest),
+    requestedBy,
+    createdBy
   }
 
+  // if (!submissionId || !submissionType || !requestedBy) {
+  //   return jsonActionFailed("All fields are required.");
+  // }
+
   try {
-    const approval = await prisma.approval.create({
-      data: {
-        submissionId,
-        submissionType,
-        requestedBy,
-      },
-    });
+    const approval = await prisma.approval.create({ data });
 
     return jsonCreated(approval);
   } catch (error) {
@@ -28,43 +33,45 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get("status");
-  const requestedBy = searchParams.get("requestedBy");
-  const submissionId = searchParams.get("submissionId");
-
-  const filters: Prisma.ApprovalWhereInput = {};
-  if (status) filters.status = status as ApprovalStatus;
-  if (requestedBy) filters.requestedBy = requestedBy;
-  if (submissionId) filters.submissionId = submissionId;
-
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const size = parseInt(searchParams.get('limit') || '10', 10);
+
+    const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const size = parseInt(searchParams.get("limit") || "10", 10);
 
     const skip = (page - 1) * size;
+
+    // Filter kondisi
+    const filters: any = {};
+    if (status) {
+      filters.status = status;
+    }
 
     const [approvals, total] = await Promise.all([
       prisma.approval.findMany({
         where: filters,
-        include: {
-          submission: true,
-        },
         skip,
         take: size,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
-      prisma.asset.count(),
+      prisma.approval.count({ where: filters }),
     ]);
 
+    const data = approvals.map((a) => ({
+      ...a,
+      approvedBy: safeJsonParse(a.approvedBy),
+      assetsRequest: safeJsonParse(a.assetsRequest),
+    }));
+
     return jsonResponse({
-      data: approvals ? approvals : [],
+      data,
       page,
       size,
       total,
     });
-  } catch {
+  } catch (error) {
+    console.error("Failed to fetch approvals", error);
     return jsonErrorResponse("Failed to fetch approvals");
   }
 }

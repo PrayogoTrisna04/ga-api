@@ -32,21 +32,21 @@ model Asset {
   is_deleted    Boolean @default(false)
   serial_number String?
   createdAt     DateTime @default(now())
-  approvals     Approval[]
-  assignments   AssetAssignment[]
+  // approvals     Approval[]
+  // assignments   AssetAssignment[]
   category      Category @relation(fields: [categoryId], references: [id])
 }
 
-model User {
-  id                 String               @id @default(cuid())
-  name               String
-  email              String               @unique
-  password           String
-  role               Role                 @default(USER)
-  createdAt          DateTime             @default(now())
-  AssetAssignment    AssetAssignment[]
-  ProcurementRequest ProcurementRequest[]
-}
+// model User {
+//   id                 String               @id @default(cuid())
+//   name               String
+//   email              String               @unique
+//   password           String
+//   role               Role                 @default(USER)
+//   createdAt          DateTime             @default(now())
+//   AssetAssignment    AssetAssignment[]
+//   ProcurementRequest ProcurementRequest[]
+// }
 
 enum Role {
   USER
@@ -54,53 +54,44 @@ enum Role {
   GA
 }
 
-enum ApprovalStatus {
-  draft
-  waiting_approval
-  ready_onprogress
-  onprogress
-  done
-  rejected
-}
+// model Vendor {
+//   id            Int             @id @default(autoincrement())
+//   name          String
+//   email         String?
+//   phone         String?
+//   address       String?
+//   quotes        VendorQuote[]
+//   po            PurchaseOrder[]
+//   createdAt     DateTime        @default(now())
+//   VendorProduct VendorProduct[]
+// }
 
-model Vendor {
-  id            Int             @id @default(autoincrement())
-  name          String
-  email         String?
-  phone         String?
-  address       String?
-  quotes        VendorQuote[]
-  po            PurchaseOrder[]
-  createdAt     DateTime        @default(now())
-  VendorProduct VendorProduct[]
-}
+// model AssetAssignment {
+//   id         Int       @id @default(autoincrement())
+//   assetId    String
+//   userId     String
+//   assignedAt DateTime  @default(now())
+//   returnedAt DateTime?
 
-model AssetAssignment {
-  id         Int       @id @default(autoincrement())
-  assetId    String
-  userId     String
-  assignedAt DateTime  @default(now())
-  returnedAt DateTime?
+//   approvedBy String?
+//   approvedAt DateTime?
 
-  approvedBy String?
-  approvedAt DateTime?
+//   asset Asset @relation(fields: [assetId], references: [id])
+//   user  User  @relation(fields: [userId], references: [id])
+// }
 
-  asset Asset @relation(fields: [assetId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
-}
+// model ProcurementRequest {
+//   id          Int           @id @default(autoincrement())
+//   title       String
+//   description String
+//   requestedBy String
+//   status      RequestStatus @default(DRAFT)
+//   createdAt   DateTime      @default(now())
 
-model ProcurementRequest {
-  id          Int           @id @default(autoincrement())
-  title       String
-  description String
-  requestedBy String
-  status      RequestStatus @default(DRAFT)
-  createdAt   DateTime      @default(now())
-
-  user          User           @relation(fields: [requestedBy], references: [id])
-  quotes        VendorQuote[]
-  purchaseOrder PurchaseOrder?
-}
+//   user          User           @relation(fields: [requestedBy], references: [id])
+//   quotes        VendorQuote[]
+//   purchaseOrder PurchaseOrder?
+// }
 
 enum RequestStatus {
   DRAFT
@@ -111,43 +102,43 @@ enum RequestStatus {
   COMPLETED
 }
 
-model VendorQuote {
-  id            Int      @id @default(autoincrement())
-  procurementId Int
-  vendorId      Int
-  itemName      String
-  price         Int
-  currency      String   @default("IDR")
-  taxIncluded   Boolean  @default(false)
-  termOfPayment String?
-  createdAt     DateTime @default(now())
+// model VendorQuote {
+//   id            Int      @id @default(autoincrement())
+//   procurementId Int
+//   vendorId      Int
+//   itemName      String
+//   price         Int
+//   currency      String   @default("IDR")
+//   taxIncluded   Boolean  @default(false)
+//   termOfPayment String?
+//   createdAt     DateTime @default(now())
 
-  procurement ProcurementRequest @relation(fields: [procurementId], references: [id])
-  vendor      Vendor             @relation(fields: [vendorId], references: [id])
-}
+//   procurement ProcurementRequest @relation(fields: [procurementId], references: [id])
+//   vendor      Vendor             @relation(fields: [vendorId], references: [id])
+// }
 
-model PurchaseOrder {
-  id            Int      @id @default(autoincrement())
-  procurementId Int      @unique // ← tambahkan ini
-  vendorId      Int
-  totalAmount   Int
-  poDate        DateTime @default(now())
+// model PurchaseOrder {
+//   id            Int      @id @default(autoincrement())
+//   procurementId Int      @unique // ← tambahkan ini
+//   vendorId      Int
+//   totalAmount   Int
+//   poDate        DateTime @default(now())
 
-  procurement ProcurementRequest @relation(fields: [procurementId], references: [id])
-  vendor      Vendor             @relation(fields: [vendorId], references: [id])
-}
+//   procurement ProcurementRequest @relation(fields: [procurementId], references: [id])
+//   vendor      Vendor             @relation(fields: [vendorId], references: [id])
+// }
 
-model VendorProduct {
-  id        Int      @id @default(autoincrement())
-  vendorId  Int
-  name      String
-  spec      String
-  price     Int
-  available Boolean  @default(true)
-  createdAt DateTime @default(now())
+// model VendorProduct {
+//   id        Int      @id @default(autoincrement())
+//   vendorId  Int
+//   name      String
+//   spec      String
+//   price     Int
+//   available Boolean  @default(true)
+//   createdAt DateTime @default(now())
 
-  vendor Vendor @relation(fields: [vendorId], references: [id])
-}
+//   vendor Vendor @relation(fields: [vendorId], references: [id])
+// }
 
 enum SubmissionType {
   PROCUREMENT
@@ -156,34 +147,30 @@ enum SubmissionType {
   ASSIGNMENT
 }
 
-model SubmissionDetail {
-  id             String         @id @default(uuid())
-  submissionType SubmissionType
-  refId          String
-  title          String
-  description    String?
-  assetId        String?
-  condition      String?
-  location       String?
-  reason         String?
-  urgency        String?
-  createdBy      String
-  createdAt      DateTime       @default(now())
-  Approval       Approval[]
-}
+// model SubmissionDetail {
+//   id             String         @id @default(uuid())
+//   submissionType SubmissionType
+//   refId          String
+//   title          String
+//   description    String?
+//   assetId        String?
+//   condition      String?
+//   location       String?
+//   reason         String?
+//   urgency        String?
+//   createdBy      String
+//   createdAt      DateTime       @default(now())
+//   // Approval       Approval[]
+// }
 
 model Approval {
   id             Int            @id @default(autoincrement())
-  submissionId   String
   submissionType SubmissionType
-  status         ApprovalStatus @default(waiting_approval)
+  status         RequestStatus  @default(DRAFT)
   notes          String?
-  createdAt      DateTime       @default(now())
-  requestedBy    String
   approvedBy     String?
-  approvedAt     DateTime?
-
-  submission SubmissionDetail @relation(fields: [submissionId], references: [id])
-  Asset      Asset?           @relation(fields: [assetId], references: [id])
-  assetId    String?
+  assetsRequest  String?
+  createdBy      String
+  requestedBy    String
+  createdAt      DateTime       @default(now())
 }
