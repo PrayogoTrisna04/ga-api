@@ -6,12 +6,16 @@
 
 // File: middleware.ts
 
+// middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
+
+const ALLOWED_ORIGIN = 'http://localhost:3000'
 
 const PUBLIC_API = [
   '/api/auth',
   '/api/submission-detail',
   '/api/approval',
+  '/api/upload',
   '/api/asset',
   '/api/category',
   '/api/procurement',
@@ -22,25 +26,51 @@ const PUBLIC_API = [
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  const origin = req.headers.get('origin') || ''
 
+  // Preflight (OPTIONS)
+  if (req.method === 'OPTIONS') {
+    if (origin === ALLOWED_ORIGIN) {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Credentials': 'true',
+        },
+      })
+    }
+    return new NextResponse(null, { status: 403 })
+  }
+
+  // Kalau route public, skip auth
   if (PUBLIC_API.some(path => pathname.startsWith(path))) {
-    return NextResponse.next()
+    return withCors(NextResponse.next(), origin)
   }
 
   const token = req.cookies.get('token')?.value
-
   if (!token) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    return withCors(
+      NextResponse.json({ message: 'Unauthorized' }, { status: 401 }),
+      origin
+    )
   }
 
-  return NextResponse.next()
+  return withCors(NextResponse.next(), origin)
+}
+
+function withCors(res: NextResponse, origin: string) {
+  if (origin === ALLOWED_ORIGIN) {
+    res.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN)
+    res.headers.set('Access-Control-Allow-Credentials', 'true')
+  }
+  return res
 }
 
 export const config = {
   matcher: ['/api/:path*'],
 }
-
-
 
 // export function middleware(request: NextRequest) {
 //   const { pathname } = request.nextUrl;
